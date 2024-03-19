@@ -16,6 +16,9 @@ print(df.head())
 targets = df['target'].tolist()
 predictions = df['prediction'].tolist()
 
+print("Length of Targets: ", len(targets))
+print("Length of Predictions: ", len(predictions))
+
 # Calculate metrics
 metric = {}
 metric.update(deplot_metrics.table_datapoints_precision_recall(targets, predictions))
