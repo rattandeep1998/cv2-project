@@ -3,6 +3,7 @@ from PIL import Image
 import torch, os, re
 from tqdm import tqdm
 import pandas as pd
+import json
 
 # UniChart model
 model_name = "ahmed-masry/unichart-base-960"
@@ -15,10 +16,13 @@ model.to(device)
 
 print("Device: ", device)
 
+dataset = "chartqa"
 
 # DATA PRE_PROCESSING
-# image_base_path = "../datasets/ChartQA/ChartQADataset/test/png/"
-image_base_path = "./data/chartqa/test/png/"
+if dataset == "chartqa":
+    image_base_path = "./data/chartqa/test/png/"
+elif dataset == "vistext":
+    image_base_path = "./data/vistext/images/"
 
 # LOAD IMAGES
 
@@ -45,27 +49,35 @@ print("Total Images Read: ", len(images))
 
 # LOAD TARGET DATATABLES
 
-# Assuming the directory path is 'csv_files'
-# csv_directory_path = "../datasets/ChartQA/ChartQADataset/test/tables/"
-csv_directory_path = "./data/chartqa/test/tables/"
-
-# List all CSV files in the directory
-csv_files = [file for file in os.listdir(csv_directory_path) if file.endswith('.csv')]
-
 # Initialize an empty list to store data
 targets_dictionary = {}
 
-# Read each CSV file, convert its content to a single string, and append to the list
-for file in csv_files:
-    file_path = os.path.join(csv_directory_path, file)
-    with open(file_path, 'r') as f:
-        content = f.read()
-        # Removing the '.csv' extension and using the filename as image_id
-        image_id = file.replace('.csv', '')
-        
-        targets_dictionary[image_id] = content
+if dataset == "chartqa":
+    csv_directory_path = "./data/chartqa/test/tables/"
+    csv_files = [file for file in os.listdir(csv_directory_path) if file.endswith('.csv')]
 
-print("Total CSV Files Read: ", len(targets_dictionary))
+    # Read each CSV file, convert its content to a single string, and append to the list
+    for file in csv_files:
+        file_path = os.path.join(csv_directory_path, file)
+        with open(file_path, 'r') as f:
+            content = f.read()
+            # Removing the '.csv' extension and using the filename as image_id
+            image_id = file.replace('.csv', '')
+            targets_dictionary[image_id] = content
+elif dataset == "vistext":
+    datatable_directory_path = "./data/vistext/tabular/data_test.json"
+
+    with open(datatable_directory_path) as f:
+        data = json.load(f)
+        df = pd.DataFrame(data)
+    
+    # Traverse through dataframe and store the image_id and table in targets_dictionary
+    for index, row in df.iterrows():
+        image_id = row['image_id']
+        datatable = row['datatable']
+        targets_dictionary[image_id] = datatable
+
+print("Total Data Points Read: ", len(targets_dictionary))
 
 # RUN THE MODEL
 
@@ -120,4 +132,3 @@ df.to_csv(results_output_path, index=False)
 
 print("Total Written Rows: ", len(df))
 print("Ignored Data Points: ", ignored_data_points)
-
