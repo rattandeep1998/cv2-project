@@ -1,0 +1,7 @@
+pycocoevalcap @ git+https://github.com/salaniz/pycocoevalcap.git
+pandas
+scipy
+transformers==4.28.1
+pytorch-lightning==1.8.5
+datasets
+sentencepiece

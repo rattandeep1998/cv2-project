@@ -1,0 +1,40 @@
+image_id,prediction,target
+two_col_973,Characteristic | Inhabitants in millions & 2025* | 47.28 & 2024* | 47.11 & 2023* | 46.93 & 2022* | 46.74 & 2021* | 46.54 & 2020 | 46.49 & 2019 | 46.49 & 2018 | 46.45 & 2017 | 46.41 & 2016 | 46.4 & 2015 | 46.41 & 2014 | 46.46 & 2013 | 46.59 & 2012 | 46.77 & 2011 | 46.74 & 2010 | 46.56,"Characteristic,Inhabitants in millions
+2025*,47.28
+2024*,47.11
+2023*,46.93
+2022*,46.74
+2021*,46.54
+2020,46.49
+2019,46.49
+2018,46.45
+2017,46.41
+2016,46.4
+2015,46.41
+2014,46.46
+2013,46.59
+2012,46.77
+2011,46.74
+2010,46.56
+"
+02534409005100,Characteristic | Value & Heart disease | 371.7 & Cancers | 155.3 & Stroke | 104.7 & Accidents | 58. 1 & Pneumonia and influenza | 32.5 & Road accidents | 27. 1 & Diabetes | 17.7 & Suicide | 10.9 & Tuberculosis | 3.9,"Country,""Death rates through the 20th century, United States, 1966""
+Heart disease,371.7
+Cancers,155.3
+Stroke,104.7
+Accidents,58.1
+Pneumonia and influenza,32.5
+Road accidents,27.1
+Diabetes,17.7
+Suicide,10.9
+Tuberculosis,3.9
+"
+multi_col_21130,Characteristic | Bridal Guide | Bride's | Destination Weddings & Honeymoons | Martha Stewart Weddings & 2013 | 165.7 | 56.65 | 56.65 | 4.63 & 2012 | 207.62 | 59.71 | 50.65 | 5.27 & 2011 | 222.42 | 69.88 | 40.3 | 5.06 & 2010 | 217.86 | 65.81 | 35.43 | 5.68 & 2009 | 166.85 | 62.9 | 27.64 | 3.39 & 2008 | 192.83 | 76.36 | 34.42 | 5.58 & 2007 | 188.89 | 89.92 | 32.9 | 32.9 & 2006 | 190.82 | 95.95 | 29.16 | 29.16,"Characteristic,Bridal Guide,Bride's,Destination Weddings & Honeymoons,Martha Stewart Weddings
+2013,56.65,165.7,4.63,57.28
+2012,59.71,207.62,5.27,50.75
+2011,69.88,222.42,5.06,40.3
+2010,65.81,217.86,5.68,35.43
+2009,62.9,166.85,3.39,27.64
+2008,76.36,192.83,5.58,34.42
+2007,89.92,188.89,-,32.9
+2006,95.95,190.82,-,29.16
+"
