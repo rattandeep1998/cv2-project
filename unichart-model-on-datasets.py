@@ -114,7 +114,7 @@ for i, image in tqdm(images.items()):
 print("Total Predictions: ", len(predictions_dictionary))
 
 # Storing the model outputs
-results_output_path = "unichart_on_chartqa.csv"
+results_output_path = "unichart_on_" + dataset + ".csv"
 
 # Map the predictions to target data and save in dataframe with 3 columns image_id, prediction, target
 dataframe_rows = []
