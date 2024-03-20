@@ -16,7 +16,7 @@ model.to(device)
 
 print("Device: ", device)
 
-dataset = "chartqa"
+dataset = "vistext"
 
 # DATA PRE_PROCESSING
 if dataset == "chartqa":
@@ -42,7 +42,7 @@ for file in os.listdir(image_base_path):
         images[file] = image
 
     # TODO - Remove this condition later
-    # if tot_count == 3:
+    # if tot_count == 100:
     #     break
 
 print("Total Images Read: ", len(images))
@@ -65,7 +65,8 @@ if dataset == "chartqa":
             image_id = file.replace('.csv', '')
             targets_dictionary[image_id] = content
 elif dataset == "vistext":
-    datatable_directory_path = "./data/vistext/tabular/data_test.json"
+    # Running only on vistext TEST data
+    datatable_directory_path = "./data/vistext/data_test.json"
 
     with open(datatable_directory_path) as f:
         data = json.load(f)
@@ -73,7 +74,7 @@ elif dataset == "vistext":
     
     # Traverse through dataframe and store the image_id and table in targets_dictionary
     for index, row in df.iterrows():
-        image_id = row['image_id']
+        image_id = row['img_id']
         datatable = row['datatable']
         targets_dictionary[image_id] = datatable
 
@@ -89,27 +90,30 @@ predictions_dictionary = {}
 # Loop over images and generate the output
 for i, image in tqdm(images.items()):
 
-    decoder_input_ids = processor.tokenizer(input_prompt, add_special_tokens=False, return_tensors="pt").input_ids
-    pixel_values = processor(image, return_tensors="pt").pixel_values
+    # Added check for VisText dataset
+    if i in targets_dictionary.keys():
+        
+        decoder_input_ids = processor.tokenizer(input_prompt, add_special_tokens=False, return_tensors="pt").input_ids
+        pixel_values = processor(image, return_tensors="pt").pixel_values
 
-    outputs = model.generate(
-        pixel_values.to(device),
-        decoder_input_ids=decoder_input_ids.to(device),
-        max_length=model.decoder.config.max_position_embeddings,
-        early_stopping=True,
-        pad_token_id=processor.tokenizer.pad_token_id,
-        eos_token_id=processor.tokenizer.eos_token_id,
-        use_cache=True,
-        num_beams=4,
-        bad_words_ids=[[processor.tokenizer.unk_token_id]],
-        return_dict_in_generate=True,
-    )
+        outputs = model.generate(
+            pixel_values.to(device),
+            decoder_input_ids=decoder_input_ids.to(device),
+            max_length=model.decoder.config.max_position_embeddings,
+            early_stopping=True,
+            pad_token_id=processor.tokenizer.pad_token_id,
+            eos_token_id=processor.tokenizer.eos_token_id,
+            use_cache=True,
+            num_beams=4,
+            bad_words_ids=[[processor.tokenizer.unk_token_id]],
+            return_dict_in_generate=True,
+        )
 
-    sequence = processor.batch_decode(outputs.sequences)[0]
-    sequence = sequence.replace(processor.tokenizer.eos_token, "").replace(processor.tokenizer.pad_token, "")
-    sequence = sequence.split("<s_answer>")[1].strip()
+        sequence = processor.batch_decode(outputs.sequences)[0]
+        sequence = sequence.replace(processor.tokenizer.eos_token, "").replace(processor.tokenizer.pad_token, "")
+        sequence = sequence.split("<s_answer>")[1].strip()
 
-    predictions_dictionary[i] = sequence
+        predictions_dictionary[i] = sequence
 
 print("Total Predictions: ", len(predictions_dictionary))
 

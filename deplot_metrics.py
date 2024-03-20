@@ -25,13 +25,16 @@ import numpy as np
 import pix2struct_metrics
 
 from scipy import optimize
-
+import re
 
 def _to_float(text):
   try:
     if text.endswith("%"):
       # Convert percentages to floats.
       return float(text.rstrip("%")) / 100.0
+    elif text.endswith("*"):
+      # Remove * from the end of numbers
+      return float(text.rstrip("*"))
     else:
       return float(text)
   except ValueError:
@@ -63,16 +66,24 @@ def _table_numbers_match(target, prediction):
     distance.append([_get_relative_distance(t, p) for p in prediction_numbers])
   cost_matrix = np.array(distance)
   row_ind, col_ind = optimize.linear_sum_assignment(cost_matrix)
-  return 1 - cost_matrix[row_ind, col_ind].sum() / max_len
+
+  ans = 1 - cost_matrix[row_ind, col_ind].sum() / max_len
+  return ans
 
 
 def _get_table_numbers(text):
   numbers = []
-  for line in text.splitlines():
-    for part in line.split(" | "):
-      if part.strip():
+  lines = re.split('[\n|]+', text)
+  for line in lines:
+    lines_pieces = re.split('[&,]+', line)
+    for part in lines_pieces:
+      part = part.strip()
+      if part:
         try:
-          numbers.append(float(part))
+          part_float = _to_float(part)
+
+          if part_float is not None:
+            numbers.append(part_float)
         except ValueError:
           pass
   return numbers
@@ -94,7 +105,7 @@ def table_number_accuracy_per_point(
     A list of float numbers.
   """
   all_points_scores = []
-  for p, targets in zip(predictions, targets):
+  for p, target in zip(predictions, targets):
     all_points_scores.append(max(_table_numbers_match(t, p) for t in targets))
   return all_points_scores
 
@@ -172,6 +183,7 @@ def _parse_table(text, transposed = False):
     offset = 0
   if len(lines) < offset + 1:
     return Table(title=title)
+    
   rows = []
   for line in lines[offset:]:
     rows.append(tuple(v.strip() for v in line.split(" | ")))
@@ -224,6 +236,7 @@ def _table_datapoints_precision_recall_f1(
     number_theta = 0.1,
 ):
   """Calculates matching similarity between two tables as dicts."""
+
   target_datapoints = list(_get_table_datapoints(target_table).items())
   prediction_datapoints = list(_get_table_datapoints(prediction_table).items())
   if not target_datapoints and not prediction_datapoints:
@@ -277,6 +290,7 @@ def table_datapoints_precision_recall_per_point(
     Dictionary with per-point precision, recall and F1
   """
   assert len(targets) == len(predictions)
+
   per_point_scores = {"precision": [], "recall": [], "f1": []}
   for pred, target in zip(predictions, targets):
     all_metrics = []
@@ -291,7 +305,7 @@ def table_datapoints_precision_recall_per_point(
                   text_theta,
                   number_theta,
               )
-              for t in target
+              for t in targets
           ]
       )
       # pylint:enable=g-complex-comprehension

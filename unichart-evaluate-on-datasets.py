@@ -2,10 +2,11 @@ import pandas as pd
 import deplot_metrics as deplot_metrics
 import json
 
+# dataset = "vistext"
 dataset = "chartqa"
 
 # Update this path
-csv_file_path = "unichart_on_" + dataset + ".csv"
+csv_file_path = "unichart_on_" + dataset + "_backup.csv"
 
 df = pd.read_csv(csv_file_path)
 

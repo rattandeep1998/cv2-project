@@ -1,0 +1,16 @@
+          image_id  ...                                             target
+0      two_col_973  ...  Characteristic,Inhabitants in millions\n2025*,...
+1   02534409005100  ...  Country,"Death rates through the 20th century,...
+2  multi_col_21130  ...  Characteristic,Bridal Guide,Bride's,Destinatio...
+3             4842  ...  Entity,Lower,Middle,Upper\n1971,25,61,14\n1981...
+4   two_col_104313  ...  Characteristic,Percentage of respondents\nTota...
+
+[5 rows x 3 columns]
+Length of Targets:  1509
+Length of Predictions:  1509
+{
+  "table_datapoints_precision": 100.0,
+  "table_datapoints_recall": 100.0,
+  "table_datapoints_f1": 100.0,
+  "numbers_match": 99.98162552983253
+}
