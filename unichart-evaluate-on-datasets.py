@@ -2,20 +2,49 @@ import pandas as pd
 import deplot_metrics as deplot_metrics
 import json
 
-# dataset = "vistext"
-dataset = "chartqa"
 
-# Update this path
-csv_file_path = "unichart_on_" + dataset + "_backup.csv"
+def preprocess_outputs(targets, predictions, dataset):
+    if dataset == "chartqa":
+        # Replace & with <0x0a> and individual strings to array
+        predictions = [prediction.replace("&", "<0x0a>") for prediction in predictions]
+
+        # Replace new line with <0x0a> and , with ' | '
+        targets = [target.replace("\n", "<0x0a>").replace(",", " | ") for target in targets]
+        targets = [[target] for target in targets]
+
+        return targets, predictions
+    elif dataset == "vistext":
+        # Replace & with <0x0a> and individual strings to array
+        predictions = [prediction.replace("&", "<0x0a>") for prediction in predictions]
+
+        targets = [target.replace("&", "<0x0a>") for target in targets]
+        targets = [[target] for target in targets]
+
+        return targets, predictions
+
+
+# dataset = "chartqa"
+# csv_file_path = "unichart_on_chartqa_backup.csv"
+    
+dataset = "vistext"
+csv_file_path = "unichart_on_vistext_updated.csv"
 
 df = pd.read_csv(csv_file_path)
-
-# Print the first 5 rows of the dataframe
-print(df.head())
 
 # Extract targets and predictions
 targets = df['target'].tolist()
 predictions = df['prediction'].tolist()
+
+targets, predictions = preprocess_outputs(targets, predictions, dataset)
+
+# Output targets, predictions to csv
+df['target'] = targets
+df['prediction'] = predictions
+
+df.to_csv("unichart_on_" + dataset + "_processed.csv", index=False)
+
+# Print the first 5 rows of the dataframe
+print(df.head())
 
 print("Length of Targets: ", len(targets))
 print("Length of Predictions: ", len(predictions))
@@ -23,6 +52,7 @@ print("Length of Predictions: ", len(predictions))
 # Calculate metrics
 metric = {}
 metric.update(deplot_metrics.table_datapoints_precision_recall(targets, predictions))
+# metric.update(deplot_metrics.row_datapoints_precision_recall(targets, predictions))
 metric.update(deplot_metrics.table_number_accuracy(targets, predictions))
 metric_log = json.dumps(metric, indent=2)
 

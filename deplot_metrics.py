@@ -56,6 +56,10 @@ def _table_numbers_match(target, prediction):
 
   target_numbers = _get_table_numbers(target)
   prediction_numbers = _get_table_numbers(prediction)
+  # print(f"Target: {target}")
+  # print(f"Prediction: {prediction}")
+  # print(f"Target Numbers: {target_numbers}")
+  # print(f"Prediction Numbers: {prediction_numbers}")
   if not target_numbers and not prediction_numbers:
     return 1
   if not target_numbers or not prediction_numbers:
@@ -72,21 +76,32 @@ def _table_numbers_match(target, prediction):
 
 
 def _get_table_numbers(text):
+  # TODO - UPDATED CODE DEBUGGING -- This code is fixed from the original code
   numbers = []
-  lines = re.split('[\n|]+', text)
-  for line in lines:
-    lines_pieces = re.split('[&,]+', line)
-    for part in lines_pieces:
-      part = part.strip()
-      if part:
+  for line in text.split("<0x0a>"):
+    for part in line.split(" | "):
+      if part.strip():
         try:
-          part_float = _to_float(part)
-
-          if part_float is not None:
-            numbers.append(part_float)
+          numbers.append(float(part))
         except ValueError:
           pass
   return numbers
+
+  # numbers = []
+  # lines = re.split('[\n|]+', text)
+  # for line in lines:
+  #   lines_pieces = re.split('[&,]+', line)
+  #   for part in lines_pieces:
+  #     part = part.strip()
+  #     if part:
+  #       try:
+  #         part_float = _to_float(part)
+
+  #         if part_float is not None:
+  #           numbers.append(part_float)
+  #       except ValueError:
+  #         pass
+  # return numbers
 
 
 def table_number_accuracy_per_point(
@@ -105,7 +120,8 @@ def table_number_accuracy_per_point(
     A list of float numbers.
   """
   all_points_scores = []
-  for p, target in zip(predictions, targets):
+  # TODO - FIXES DONE BY RATTAN targets -> target
+  for p, targets in zip(predictions, targets):
     all_points_scores.append(max(_table_numbers_match(t, p) for t in targets))
   return all_points_scores
 
@@ -172,7 +188,11 @@ class Table:
 
 def _parse_table(text, transposed = False):
   """Builds a table from a markdown representation."""
-  lines = text.lower().splitlines()
+  # TODO - DEBUGGING CODE -- This code is to parse DePlot tables
+
+  lines = text.lower().split('<0x0a>')
+  # lines = text.lower().splitlines()
+  
   if not lines:
     return Table()
   if lines[0].startswith("title |"):
@@ -183,14 +203,84 @@ def _parse_table(text, transposed = False):
     offset = 0
   if len(lines) < offset + 1:
     return Table(title=title)
-    
+  
   rows = []
   for line in lines[offset:]:
     rows.append(tuple(v.strip() for v in line.split(" | ")))
+  
   if transposed:
     rows = [tuple(row) for row in itertools.zip_longest(*rows, fillvalue="")]
-  return Table(title=title, headers=rows[0], rows=tuple(rows[1:]))
 
+  table = Table(title=title, headers=rows[0], rows=tuple(rows[1:]))
+  # print("Table:")
+  # print(table)
+  return table
+
+def _parse_chart2table_table(text, transposed = False):
+  """Builds a table from a markdown representation."""
+
+  rows = text.lower().split('&&&')
+  title = rows[0].split('|')[1].strip()
+  cleaned_rows = []
+  for row in rows[1:]:
+    if row.strip():
+      cleaned_row = [cell.strip() for cell in row.split('|')]
+      cleaned_rows.append(tuple(cleaned_row))
+
+  if transposed:
+    cleaned_rows = [tuple(row) for row in itertools.zip_longest(*cleaned_rows, fillvalue="")]
+
+  if len(cleaned_rows) < 2:
+    return Table(title=title)
+
+  return Table(title=title, headers=cleaned_rows[0], rows=tuple(cleaned_rows[1:]))
+
+
+def _parse_gpt4v_table(linearized_table, transposed=False):
+    title, linearized_table = linearized_table.split('<s>')
+    title = title.lower().strip()
+    linearized_table = linearized_table.lower().strip().replace('~','')
+    rows = [[ cell.strip() for cell in row.split('&&&')] for row in linearized_table.split('\n')]
+    headers = tuple(rows[0])
+    rows = [tuple(row) for row in rows[1:]]
+
+    if transposed:
+      rows = [tuple(row) for row in itertools.zip_longest(*rows, fillvalue="")]
+
+    return Table(title=title, headers=headers, rows=tuple(rows))
+
+def _parse_vistext_table(linearized_table, transposed=False):
+    title, linearized_table = linearized_table.split('<s>')
+    title = title.lower().strip()
+    linearized_table = linearized_table.lower().strip()
+    rows = [[ cell.strip() for cell in row.split('\t')] for row in linearized_table.split('\n')]
+    headers = tuple(rows[0])
+    rows = [tuple(row) for row in rows[1:]]
+
+    if transposed:
+      rows = [tuple(row) for row in itertools.zip_longest(*rows, fillvalue="")]
+
+    return Table(title=title, headers=headers, rows=tuple(rows))
+
+def _parse_bard_table(bard_output, transposed = False):
+  """Builds a table from a markdown representation."""
+  try:
+      bard_output = bard_output.replace('**','').replace('###','')
+      title, table_string = bard_output.split('Table:')[:2]
+      title = title.split('Title:')[1].strip()
+      table_string = table_string.strip().split('\n\n')[0].strip()
+
+      # table_string = re.sub('\n-+\s*\|\s*-+\n', '\n', table_string)
+
+      # Split data into lines
+      rows = table_string.split('\n')
+
+      # Split each line by '|' and remove trailing whitespaces
+      rows = [tuple([x.strip() for x in line.split('|') if x.strip()]) for line in rows if "---" not in line ]
+
+  except Exception as e:
+    return Table(title=None, headers=[], rows=tuple([]))
+  return Table(title=title, headers=rows[0], rows=tuple(rows[1:]))
 
 def _get_table_datapoints(table):
   """Extracts a dict of datapoints from a table."""
@@ -199,9 +289,15 @@ def _get_table_datapoints(table):
     datapoints["title"] = table.title
   if not table.rows or len(table.headers) <= 1:
     return datapoints
-  for row in table.rows:
-    for header, cell in zip(table.headers[1:], row[1:]):
-      datapoints[f"{row[0]} {header}"] = cell
+  # for row in table.rows:
+  #   for header, cell in zip(table.headers[1:], row[1:]):
+  #     datapoints[f"{row[0]} {header}"] = cell
+  # Unichart is not generating correct column names for datatables on VisText dataset
+  # Therefore, header names is replaced with header index to get the correct metrics for column similarity with ANLS scores
+  for row_index, row in enumerate(table.rows):
+    for header_index, cell in enumerate(row[1:], start=1):
+        datapoints[f"{row[0]} header_{header_index}"] = cell
+
   return datapoints
 
 
@@ -237,8 +333,15 @@ def _table_datapoints_precision_recall_f1(
 ):
   """Calculates matching similarity between two tables as dicts."""
 
+  print(f"Target Table Datapoints: {_get_table_datapoints(target_table)}")
+  print(f"Predicted Table Datapoints: {_get_table_datapoints(prediction_table)}")
+
   target_datapoints = list(_get_table_datapoints(target_table).items())
   prediction_datapoints = list(_get_table_datapoints(prediction_table).items())
+
+  print(f"Target Datapoints: {target_datapoints}")
+  print(f"Prediction Datapoints: {prediction_datapoints}")
+
   if not target_datapoints and not prediction_datapoints:
     return 1, 1, 1
   if not target_datapoints:
@@ -253,8 +356,15 @@ def _table_datapoints_precision_recall_f1(
             for p, _ in prediction_datapoints
         ]
     )
+  
   cost_matrix = np.array(distance)
+
+  print(f"Cost Matrix: {cost_matrix}")
   row_ind, col_ind = optimize.linear_sum_assignment(cost_matrix)
+
+  print(f"Row Ind: {row_ind}")
+  print(f"Col Ind: {col_ind}")
+
   score = 0
   for r, c in zip(row_ind, col_ind):
     score += _get_datapoint_metric(
@@ -296,19 +406,43 @@ def table_datapoints_precision_recall_per_point(
     all_metrics = []
     for transposed in [True, False]:
       pred_table = _parse_table(pred, transposed=transposed)
+      print(f"Pred: {pred}")
+      print(f"Predicted Table: {pred_table}")
       # pylint:disable=g-complex-comprehension
-      all_metrics.extend(
-          [
-              _table_datapoints_precision_recall_f1(
-                  _parse_table(t),
-                  pred_table,
-                  text_theta,
-                  number_theta,
-              )
-              for t in targets
-          ]
-      )
+      # all_metrics.extend(
+      #     [
+      #         _table_datapoints_precision_recall_f1(
+      #             _parse_table(t),
+      #             pred_table,
+      #             text_theta,
+      #             number_theta,
+      #         )
+      #         # TODO - RATTAN THIS IS FIXED
+      #         for t in target
+      #     ]
+      # )
+
+      parsed_tables = []
+
+      for t in target:
+        parsed_t = _parse_table(t)
+        print(f"Target: {t}")
+        print(f"Target Table: {parsed_t}")
+
+        result = _table_datapoints_precision_recall_f1(
+            parsed_t,
+            pred_table,
+            text_theta,
+            number_theta,
+        )
+        parsed_tables.append(result)
+
+      all_metrics.extend(parsed_tables)
+
+    # print(f"All Metrics: {all_metrics}")
+    
       # pylint:enable=g-complex-comprehension
+    print(f"====================")
     p, r, f = max(all_metrics, key=lambda x: x[-1])
     per_point_scores["precision"].append(p)
     per_point_scores["recall"].append(r)
@@ -397,6 +531,13 @@ def _row_datapoints_precision_recall_f1(
       target.headers, text_theta
   )
   prediction_datapoints = _get_row_datapoints(aligned_prediction)
+
+  print(f"Target: {target}")
+  print(f"Target Datapoints: {target_datapoints}")
+  print(f"Prediction: {prediction}")
+  print(f"Prediction Datapoints: {prediction_datapoints}")
+  print(aligned_score)
+
   if not target_datapoints and not prediction_datapoints:
     return 1, 1, 1
   if not target_datapoints:
@@ -411,8 +552,15 @@ def _row_datapoints_precision_recall_f1(
             for p in prediction_datapoints
         ]
     )
+
+  print(f"Metrics: {metrics}")
+
   metrics_matrix = np.array(metrics)
   row_ind, col_ind = optimize.linear_sum_assignment(1 - metrics_matrix)
+
+  print(f"Row Ind: {row_ind}")
+  print(f"Col Ind: {col_ind}")
+
   score = metrics_matrix[row_ind, col_ind].sum()
   if score == 0:
     return 0, 0, 0
@@ -467,6 +615,7 @@ def row_datapoints_precision_recall(
                   number_theta,
               )
           )
+    print(f"====================")
     p, r, f = max(all_metrics, key=lambda x: x[-1], default=(0, 0, 0))
     precision += p
     recall += r
