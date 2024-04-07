@@ -64,9 +64,6 @@ class VistextDataset(Dataset):
         data_table = sample['table']
         # input_prompt = "<extract_data_table> <s_answer>"
         processed_parse = self.task_prefix + " " + self.prompt_end_token + " " + data_table + self.processor.tokenizer.eos_token 
-
-        print(processed_parse)
-        print("===============")
         
         input_ids = self.processor.tokenizer(
             processed_parse,

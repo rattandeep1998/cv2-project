@@ -77,9 +77,9 @@ class ChartQADataset(Dataset):
                 : torch.nonzero(labels == self.prompt_end_token_id).sum() + 1
             ] = self.ignore_id  # model doesn't need to predict prompt 
 
-            print(f"Input Ids: {input_ids}")
-            print(f"Labels: {labels}")
-            print(f"=====================")
+            # print(f"Input Ids: {input_ids}")
+            # print(f"Labels: {labels}")
+            # print(f"=====================")
             return input_tensor, input_ids, labels
         else:
             prompt_end_index = torch.nonzero(
