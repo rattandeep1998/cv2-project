@@ -289,14 +289,14 @@ def _get_table_datapoints(table):
     datapoints["title"] = table.title
   if not table.rows or len(table.headers) <= 1:
     return datapoints
-  # for row in table.rows:
-  #   for header, cell in zip(table.headers[1:], row[1:]):
-  #     datapoints[f"{row[0]} {header}"] = cell
+  for row in table.rows:
+    for header, cell in zip(table.headers[1:], row[1:]):
+      datapoints[f"{row[0]} {header}"] = cell
   # Unichart is not generating correct column names for datatables on VisText dataset
   # Therefore, header names is replaced with header index to get the correct metrics for column similarity with ANLS scores
-  for row_index, row in enumerate(table.rows):
-    for header_index, cell in enumerate(row[1:], start=1):
-        datapoints[f"{row[0]} header_{header_index}"] = cell
+  # for row_index, row in enumerate(table.rows):
+  #   for header_index, cell in enumerate(row[1:], start=1):
+  #       datapoints[f"{row[0]} header_{header_index}"] = cell
 
   return datapoints
 
@@ -333,14 +333,14 @@ def _table_datapoints_precision_recall_f1(
 ):
   """Calculates matching similarity between two tables as dicts."""
 
-  print(f"Target Table Datapoints: {_get_table_datapoints(target_table)}")
-  print(f"Predicted Table Datapoints: {_get_table_datapoints(prediction_table)}")
+  # print(f"Target Table Datapoints: {_get_table_datapoints(target_table)}")
+  # print(f"Predicted Table Datapoints: {_get_table_datapoints(prediction_table)}")
 
   target_datapoints = list(_get_table_datapoints(target_table).items())
   prediction_datapoints = list(_get_table_datapoints(prediction_table).items())
 
-  print(f"Target Datapoints: {target_datapoints}")
-  print(f"Prediction Datapoints: {prediction_datapoints}")
+  # print(f"Target Datapoints: {target_datapoints}")
+  # print(f"Prediction Datapoints: {prediction_datapoints}")
 
   if not target_datapoints and not prediction_datapoints:
     return 1, 1, 1
@@ -359,11 +359,11 @@ def _table_datapoints_precision_recall_f1(
   
   cost_matrix = np.array(distance)
 
-  print(f"Cost Matrix: {cost_matrix}")
+  # print(f"Cost Matrix: {cost_matrix}")
   row_ind, col_ind = optimize.linear_sum_assignment(cost_matrix)
 
-  print(f"Row Ind: {row_ind}")
-  print(f"Col Ind: {col_ind}")
+  # print(f"Row Ind: {row_ind}")
+  # print(f"Col Ind: {col_ind}")
 
   score = 0
   for r, c in zip(row_ind, col_ind):
@@ -406,8 +406,8 @@ def table_datapoints_precision_recall_per_point(
     all_metrics = []
     for transposed in [True, False]:
       pred_table = _parse_table(pred, transposed=transposed)
-      print(f"Pred: {pred}")
-      print(f"Predicted Table: {pred_table}")
+      # print(f"Pred: {pred}")
+      # print(f"Predicted Table: {pred_table}")
       # pylint:disable=g-complex-comprehension
       # all_metrics.extend(
       #     [
@@ -426,8 +426,8 @@ def table_datapoints_precision_recall_per_point(
 
       for t in target:
         parsed_t = _parse_table(t)
-        print(f"Target: {t}")
-        print(f"Target Table: {parsed_t}")
+        # print(f"Target: {t}")
+        # print(f"Target Table: {parsed_t}")
 
         result = _table_datapoints_precision_recall_f1(
             parsed_t,
@@ -442,7 +442,7 @@ def table_datapoints_precision_recall_per_point(
     # print(f"All Metrics: {all_metrics}")
     
       # pylint:enable=g-complex-comprehension
-    print(f"====================")
+    # print(f"====================")
     p, r, f = max(all_metrics, key=lambda x: x[-1])
     per_point_scores["precision"].append(p)
     per_point_scores["recall"].append(r)
@@ -532,11 +532,11 @@ def _row_datapoints_precision_recall_f1(
   )
   prediction_datapoints = _get_row_datapoints(aligned_prediction)
 
-  print(f"Target: {target}")
-  print(f"Target Datapoints: {target_datapoints}")
-  print(f"Prediction: {prediction}")
-  print(f"Prediction Datapoints: {prediction_datapoints}")
-  print(aligned_score)
+  # print(f"Target: {target}")
+  # print(f"Target Datapoints: {target_datapoints}")
+  # print(f"Prediction: {prediction}")
+  # print(f"Prediction Datapoints: {prediction_datapoints}")
+  # print(aligned_score)
 
   if not target_datapoints and not prediction_datapoints:
     return 1, 1, 1
@@ -553,13 +553,13 @@ def _row_datapoints_precision_recall_f1(
         ]
     )
 
-  print(f"Metrics: {metrics}")
+  # print(f"Metrics: {metrics}")
 
   metrics_matrix = np.array(metrics)
   row_ind, col_ind = optimize.linear_sum_assignment(1 - metrics_matrix)
 
-  print(f"Row Ind: {row_ind}")
-  print(f"Col Ind: {col_ind}")
+  # print(f"Row Ind: {row_ind}")
+  # print(f"Col Ind: {col_ind}")
 
   score = metrics_matrix[row_ind, col_ind].sum()
   if score == 0:
@@ -615,7 +615,7 @@ def row_datapoints_precision_recall(
                   number_theta,
               )
           )
-    print(f"====================")
+    # print(f"====================")
     p, r, f = max(all_metrics, key=lambda x: x[-1], default=(0, 0, 0))
     precision += p
     recall += r
