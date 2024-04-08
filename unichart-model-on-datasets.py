@@ -18,7 +18,7 @@ model.to(device)
 
 print("Device: ", device)
 
-dataset = "vistext"
+dataset = "chartqa"
 
 # DATA PRE_PROCESSING
 if dataset == "chartqa":
