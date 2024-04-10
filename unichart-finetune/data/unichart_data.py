@@ -9,7 +9,7 @@ from datasets import load_dataset, load_from_disk
 
 added_tokens = []
 
-class VistextDataset(Dataset):
+class UnichartDataset(Dataset):
     def __init__(
         self,
         json_path: str,
