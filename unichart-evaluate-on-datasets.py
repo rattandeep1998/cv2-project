@@ -25,9 +25,12 @@ def preprocess_outputs(targets, predictions, dataset):
 
 # dataset = "chartqa"
 # csv_file_path = "unichart_on_chartqa_backup.csv"
-    
-dataset = "vistext"
-csv_file_path = "unichart_on_finetuned_vistext_updated.csv"
+
+dataset = "chartqa"
+csv_file_path = "unichart_on_finetuned_chartqa_backup.csv"
+
+# dataset = "vistext"
+# csv_file_path = "unichart_on_finetuned_vistext_updated.csv"
 
 df = pd.read_csv(csv_file_path)
 
