@@ -5,8 +5,8 @@ from torch.utils.data import DataLoader
 from typing import List
 from datasets import load_dataset
 
-from data.vistext_data import VistextDataset
-from model.vistext_model import VistextModule
+from data.unichart_data import UnichartDataset
+from model.unichart_model import UnichartModule
 
 import pytorch_lightning as pl
 
@@ -44,6 +44,7 @@ def main():
   parser.add_argument('--nodes-num', type=int, default=1, help='nodes num')
 
   parser.add_argument('--checkpoint-path', type=str, default = "ahmed-masry/unichart-base-960", help='Path to the checkpoint')
+  parser.add_argument('--experiment_name', type=str, default="chartqa", help='Path to the output sub-directory for particular experiment')
 
   args = parser.parse_args()
 
@@ -63,8 +64,8 @@ def main():
   #                             split="valid", prompt_end_token="<s_answer>", task_prefix = "<chartqa>"
   #                             )
   
-  train_dataset = VistextDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
-  val_dataset = VistextDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
+  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
+  val_dataset = UnichartDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
 
   print(f"Train dataset length: {len(train_dataset)}")
   print(f"Val dataset length: {len(val_dataset)}")
@@ -81,9 +82,10 @@ def main():
             "warmup_steps": args.warmup_steps,
             "result_path": args.output_dir,
             "verbose": True,
+            "experiment_name": args.experiment_name
           }
 
-  model_module = VistextModule(config, processor, model, args, train_dataset, val_dataset)
+  model_module = UnichartModule(config, processor, model, args, train_dataset, val_dataset)
   
   # wandb_logger = WandbLogger(project="UniChart-ChartQA")
   # lr_callback = LearningRateMonitor(logging_interval="step")

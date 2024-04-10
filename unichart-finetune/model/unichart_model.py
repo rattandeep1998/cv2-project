@@ -13,7 +13,7 @@ import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_only
 
 
-class VistextModule(pl.LightningModule):
+class UnichartModule(pl.LightningModule):
     def __init__(self, config, processor, model, args, train_dataset, val_dataset):
         super().__init__()
         self.config = config
@@ -138,6 +138,6 @@ class VistextModule(pl.LightningModule):
 
     @rank_zero_only
     def on_save_checkpoint(self, checkpoint):
-        save_path = os.path.join(self.config['result_path'], 'chartqa-checkpoint-epoch='+str(self.current_epoch)+'-'+str(self.global_step))
+        save_path = os.path.join(self.config['result_path'], self.config['experiment_name'], 'chartqa-checkpoint-epoch='+str(self.current_epoch)+'-'+str(self.global_step))
         self.model.save_pretrained(save_path)
         self.processor.save_pretrained(save_path)
