@@ -1,6 +1,7 @@
 from transformers import VisionEncoderDecoderConfig
 from transformers import DonutProcessor, VisionEncoderDecoderModel, BartConfig
 import argparse
+import os
 from torch.utils.data import DataLoader
 from typing import List
 from datasets import load_dataset
@@ -89,7 +90,11 @@ def main():
   
   # wandb_logger = WandbLogger(project="UniChart-ChartQA")
   # lr_callback = LearningRateMonitor(logging_interval="step")
-  checkpoint_callback = ModelCheckpoint(dirpath=args.output_dir, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
+  # checkpoint_callback = ModelCheckpoint(dirpath=args.output_dir, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
+
+  model_output_path = os.path.join(args.output_dir, args.experiment_name)
+               
+  checkpoint_callback = ModelCheckpoint(dirpath=model_output_path, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
 
   trainer = pl.Trainer(
         accelerator="gpu",

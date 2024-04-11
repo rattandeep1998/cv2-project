@@ -7,7 +7,7 @@ import json
 
 # UniChart model
 # model_name = "ahmed-masry/unichart-base-960"
-model_name = "/content/output_data/chartqa-checkpoint-epoch=1-8000"
+model_name = "/content/output_data/unichart-on-chartqa-dte/chartqa-checkpoint-epoch=1-16000"
 
 input_prompt = "<extract_data_table> <s_answer>"
 
@@ -18,7 +18,7 @@ model.to(device)
 
 print("Device: ", device)
 
-dataset = "chartqa"
+dataset = "vistext"
 
 # DATA PRE_PROCESSING
 if dataset == "chartqa":
@@ -120,7 +120,7 @@ for i, image in tqdm(images.items()):
 print("Total Predictions: ", len(predictions_dictionary))
 
 # Storing the model outputs
-results_output_path = "unichart_on_finetuned_" + dataset + ".csv"
+results_output_path = "finetuned_unichart_on_chartqa_run_on_" + dataset + ".csv"
 
 # Map the predictions to target data and save in dataframe with 3 columns image_id, prediction, target
 dataframe_rows = []

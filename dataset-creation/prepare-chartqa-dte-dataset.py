@@ -64,7 +64,8 @@ def copy_images_to_new_directory(base_path, directories):
 
 # Main function
 if __name__ == '__main__':
-    base_path = "../../datasets/ChartQA/ChartQADataset"
+    # base_path = "../../datasets/ChartQA/ChartQADataset"
+    base_path = "../data/chartqa"
     directories = ['train', 'val', 'test']
     # process_data(base_path, directories)
     # copy_images_to_new_directory(base_path, directories)
