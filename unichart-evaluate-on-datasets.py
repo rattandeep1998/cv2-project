@@ -25,12 +25,16 @@ def preprocess_outputs(targets, predictions, dataset):
 
 # dataset = "chartqa"
 # csv_file_path = "unichart_on_chartqa_backup.csv"
+# processed_csv_file_path = "unichart_on_chartqa_processed.csv"
 
 dataset = "chartqa"
-csv_file_path = "unichart_on_finetuned_chartqa_backup.csv"
+csv_file_path = "finetuned_unichart_on_chartqa_run_on_chartqa.csv"
+processed_csv_file_path = "finetuned_unichart_on_chartqa_run_on_chartqa_processed.csv"
 
 # dataset = "vistext"
 # csv_file_path = "unichart_on_finetuned_vistext_updated.csv"
+# processed_csv_file_path = "unichart_on_finetuned_vistext_processed.csv"
+
 
 df = pd.read_csv(csv_file_path)
 
@@ -44,7 +48,7 @@ targets, predictions = preprocess_outputs(targets, predictions, dataset)
 df['target'] = targets
 df['prediction'] = predictions
 
-df.to_csv("unichart_on_finetuned_" + dataset + "_processed.csv", index=False)
+df.to_csv(processed_csv_file_path, index=False)
 
 # Print the first 5 rows of the dataframe
 print(df.head())
