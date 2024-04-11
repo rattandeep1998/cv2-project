@@ -25,6 +25,8 @@ def process_directory(base_path, directory):
 
                 with open(csv_file_path, 'r') as file:
                     table_data = file.read()
+                    table_data = table_data.rstrip('\n')
+                    table_data = table_data.replace("\n", " & ").replace(",", " | ")
 
                 output_list.append({"img_id": img_id, "table": table_data})
     
@@ -64,10 +66,10 @@ def copy_images_to_new_directory(base_path, directories):
 
 # Main function
 if __name__ == '__main__':
-    # base_path = "../../datasets/ChartQA/ChartQADataset"
-    base_path = "../data/chartqa"
+    base_path = "../../datasets/ChartQA/ChartQADataset"
+    # base_path = "../data/chartqa"
     directories = ['train', 'val', 'test']
-    # process_data(base_path, directories)
+    process_data(base_path, directories)
     # copy_images_to_new_directory(base_path, directories)
 
 
