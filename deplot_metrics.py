@@ -57,8 +57,8 @@ def _table_numbers_match(target, prediction):
   target_numbers = _get_table_numbers(target)
   prediction_numbers = _get_table_numbers(prediction)
   # print(f"Target: {target}")
-  # print(f"Prediction: {prediction}")
   # print(f"Target Numbers: {target_numbers}")
+  # print(f"Prediction: {prediction}")
   # print(f"Prediction Numbers: {prediction_numbers}")
   if not target_numbers and not prediction_numbers:
     return 1
@@ -71,6 +71,10 @@ def _table_numbers_match(target, prediction):
   cost_matrix = np.array(distance)
   row_ind, col_ind = optimize.linear_sum_assignment(cost_matrix)
 
+  # print(f"Row Ind: {row_ind}")
+  # print(f"Col Ind: {col_ind}")
+  # print(f"Cost Matrix: {cost_matrix}")
+  # print(f"{cost_matrix[row_ind, col_ind].sum()}")
   ans = 1 - cost_matrix[row_ind, col_ind].sum() / max_len
   return ans
 
@@ -123,6 +127,8 @@ def table_number_accuracy_per_point(
   # TODO - FIXES DONE BY RATTAN targets -> target
   for p, targets in zip(predictions, targets):
     all_points_scores.append(max(_table_numbers_match(t, p) for t in targets))
+
+  # print(f"All Points Scores: {all_points_scores}")
   return all_points_scores
 
 
@@ -367,9 +373,13 @@ def _table_datapoints_precision_recall_f1(
 
   score = 0
   for r, c in zip(row_ind, col_ind):
-    score += _get_datapoint_metric(
+    cur_score = _get_datapoint_metric(
         target_datapoints[r], prediction_datapoints[c], text_theta, number_theta
     )
+
+    # print(f"Row Index: {r}, Col Index: {c}, Score: {cur_score}")
+    
+    score += cur_score
   if score == 0:
     return 0, 0, 0
   precision = score / len(prediction_datapoints)

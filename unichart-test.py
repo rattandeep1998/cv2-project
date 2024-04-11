@@ -6,15 +6,35 @@ import json
 # targets = ["Characteristic,Inhabitants in millions\n2025*,47.28\n2024*,47.11\n2023*,46.93\n2022*,46.74"]
 # predictions = ["Characteristic | Inhabitants in millions & 2025* | 47.28 & 2024* | 47.11 & 2023* | 46.93 & 2022* | 46.74 & 2021* | 46.54 & 2020 | 46.49 & 2019 | 46.49 & 2018 | 46.45 & 2017 | 46.41 & 2016 | 46.4 & 2015 | 46.41 & 2014 | 46.46 & 2013 | 46.59 & 2012 | 46.77 & 2011 | 46.74 & 2010 | 46.56"]
 
-targets = [["""title | my table
-year | argentina | brazil
-1999 | 200 | 158
-"""]]
+# targets = [["""title | my table
+# year | argentina | brazil
+# 1999 | 200 | 158
+# """]]
 
-predictions = ["""title | my table
-year | argentina | brazil
-1999 | 202 | 0
+# predictions = ["""title | my table
+# year | argentina | brazil
+# 1999 | 202 | 0
+# """]
+
+# predictions = ["""Country | Accidents
+# Spain | 100
+# Germany | 300
+# """]
+
+# targets = [["""Country | Accidents
+# Spain | 100
+# Germany | 300
+# """]]
+
+predictions = ["""Country | Number of Accidents
+Spain | 100
+Germany | 100
 """]
+
+targets = [["""Country | Number of Accidents
+Spain | 100
+Germany | 300
+"""]]
 
 predictions1 = ["""title | my table
 argentina | brazil | time
@@ -22,7 +42,7 @@ argentina | brazil | time
 """]
 
 targets[0][0] = targets[0][0].replace("\n", "<0x0a>")
-predictions1[0] = predictions1[0].replace("\n", "<0x0a>")
+predictions[0] = predictions[0].replace("\n", "<0x0a>")
 
 # Unichart on Vistext
 # predictions = ["Characteristic | [unnamed data series #0] | [unnamed data series #1] & 2004.0 | 0.01 | 0.01 & 2006.0 | 0.05 | 0.05 & 2008.0 | 0.08 | 0.08 & 2010.0 | 0.13 | 0.13 & 2012.0 | 0.19 | 0.19"]
@@ -52,9 +72,9 @@ predictions1[0] = predictions1[0].replace("\n", "<0x0a>")
 print(f"Targets: {targets}")
 print(f"Predictions: {predictions}")
 
-print(deplot_metrics.table_datapoints_precision_recall(targets, predictions1))
+# print(deplot_metrics.table_datapoints_precision_recall(targets, predictions))
 # print(deplot_metrics.row_datapoints_precision_recall(targets, predictions))
-print(deplot_metrics.table_number_accuracy(targets, predictions1))
+print(deplot_metrics.table_number_accuracy(targets, predictions))
 
 # print("Predictions 1")
 # print(deplot_metrics.table_datapoints_precision_recall(targets, predictions1))
