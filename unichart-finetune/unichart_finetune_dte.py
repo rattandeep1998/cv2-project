@@ -12,6 +12,7 @@ from model.unichart_model import UnichartModule
 import pytorch_lightning as pl
 
 from pytorch_lightning.callbacks import ModelCheckpoint
+from pytorch_lightning.loggers import TensorBoardLogger
 
 
 def main():
@@ -93,8 +94,10 @@ def main():
   # checkpoint_callback = ModelCheckpoint(dirpath=args.output_dir, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
 
   model_output_path = os.path.join(args.output_dir, args.experiment_name)
-               
+  
   checkpoint_callback = ModelCheckpoint(dirpath=model_output_path, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
+
+  tensorboard_logger = TensorBoardLogger(save_dir=model_output_path, name=args.experiment_name)
 
   trainer = pl.Trainer(
         accelerator="gpu",
@@ -109,7 +112,7 @@ def main():
         num_sanity_val_steps=0,
         #enable_checkpointing=True,
         default_root_dir=args.output_dir,
-        # logger=wandb_logger,
+        logger=tensorboard_logger,
         callbacks=[checkpoint_callback],
   )
 
