@@ -19,10 +19,11 @@ def split_dataset(data, train_percent, val_percent, output_path_prefix):
     with open(f'{output_path_prefix}_val.json', 'w') as f:
         json.dump(val_data, f, indent=4)
 
-file_path = 'filtered_unichart_pretrain_datatable.json'
+file_path = '../data/unichart-pretrain/filtered_unichart_pretrain_datatable.json'
+output_path_prefix = '../data/unichart-pretrain/filtered_unichart_pretrain_datatable'
 
 # Load data from the JSON file
 with open(file_path, 'r') as file:
     formatted_data = json.load(file)
 
-split_dataset(formatted_data, train_percent=0.5, val_percent=0.05, output_path_prefix='./filtered_unichart_pretrain_datatable')
+split_dataset(formatted_data, train_percent=0.5, val_percent=0.05, output_path_prefix=output_path_prefix)
