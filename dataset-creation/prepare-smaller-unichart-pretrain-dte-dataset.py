@@ -26,4 +26,4 @@ output_path_prefix = '../data/unichart-pretrain/filtered_unichart_pretrain_datat
 with open(file_path, 'r') as file:
     formatted_data = json.load(file)
 
-split_dataset(formatted_data, train_percent=0.5, val_percent=0.05, output_path_prefix=output_path_prefix)
+split_dataset(formatted_data, train_percent=0.1, val_percent=0.005, output_path_prefix=output_path_prefix)

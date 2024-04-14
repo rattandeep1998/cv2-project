@@ -7,9 +7,9 @@ import json
 
 # UniChart model
 # model_name = "ahmed-masry/unichart-base-960"
-model_name = "ahmed-masry/unichart-chartqa-960"
+# model_name = "ahmed-masry/unichart-chartqa-960"
 
-# model_name = "/content/output_data/unichart-on-chartqa-formatted-dte/chartqa-checkpoint-epoch=0-8000"
+model_name = "/content/output_data/unichart-on-pretrain-unichart-dte/chartqa-checkpoint-epoch=2-500"
 
 input_prompt = "<extract_data_table> <s_answer>"
 
@@ -27,6 +27,8 @@ if dataset == "chartqa":
     image_base_path = "./data/chartqa/test/png/"
 elif dataset == "vistext":
     image_base_path = "./data/vistext/images/"
+# elif dataset == "unichart-pretrain":
+#     image_base_path = "./data/unichart-pretrain/UniCHart-pretrain-images/content/images"
 
 # LOAD IMAGES
 
@@ -122,7 +124,7 @@ for i, image in tqdm(images.items()):
 print("Total Predictions: ", len(predictions_dictionary))
 
 # Storing the model outputs
-results_output_path = "finetuned_unichart_on_chartqa_ahmedmastry_run_on_" + dataset + ".csv"
+results_output_path = "finetuned_unichart_on_unichart_pretrain_run_on_" + dataset + ".csv"
 
 # Map the predictions to target data and save in dataframe with 3 columns image_id, prediction, target
 dataframe_rows = []

@@ -16,8 +16,11 @@ json_data = json.loads(json_file)
 # Read csv and for each image id in dataframe, get corresponding text from json and override target column to new text from json file
 import pandas as pd
 
+input_csv_file = "./finetuned_unichart_on_unichart_pretrain_run_on_vistext.csv"
+output_csv_file = "./finetuned_unichart_on_unichart_pretrain_run_on_vistext_updated.csv"
+
 # Read csv file
-df = pd.read_csv('./finetuned_unichart_on_chartqa_ahmedmastry_run_on_vistext.csv')
+df = pd.read_csv(input_csv_file)
 
 
 def find_table_by_img_id(data, img_id):
@@ -42,4 +45,4 @@ for index, row in df.iterrows():
         print("Table not found for img_id {}".format(image_id))
 
 # Save updated dataframe to new csv file
-df.to_csv('./finetuned_unichart_on_chartqa_ahmedmastry_run_on_vistext_updated.csv', index=False)
+df.to_csv(output_csv_file, index=False)
