@@ -6,8 +6,21 @@ import torch
 from torch.utils.data import Dataset
 from transformers import DonutProcessor
 from datasets import load_dataset, load_from_disk
+import numpy as np
 
 added_tokens = []
+
+def hide_patches(image, grid_size=(16, 16), p_hide=0.3, average_pixel_value=128):
+    img_array = np.array(image)
+    h, w, _ = img_array.shape
+    patch_h, patch_w = h // grid_size[0], w // grid_size[1]
+
+    for i in range(0, h, patch_h):
+        for j in range(0, w, patch_w):
+            if np.random.rand() < p_hide:  # Randomly choose to hide this patch based on p_hide
+                img_array[i:i + patch_h, j:j + patch_w, :] = average_pixel_value
+    
+    return Image.fromarray(img_array)
 
 class UnichartDataset(Dataset):
     def __init__(
@@ -21,12 +34,18 @@ class UnichartDataset(Dataset):
         prompt_end_token: str = None,
         task_prefix: str = '<chartqa>',
         sort_json_key: bool = True,
+        use_hide_patches: bool = False,
+        p_hide: float = 0.3,
+        grid_size: Tuple[int, int] = (16, 16),
     ):
         super().__init__()
 
         self.max_length = max_length
         self.split = split
         self.ignore_id = ignore_id
+        self.use_hide_patches = use_hide_patches
+        self.p_hide = p_hide
+        self.grid_size = grid_size
 
         self.prompt_end_token = prompt_end_token 
         self.sort_json_key = sort_json_key
@@ -40,10 +59,23 @@ class UnichartDataset(Dataset):
         self.prompt_end_token_id = self.processor.tokenizer.convert_tokens_to_ids(self.prompt_end_token)
         self.task_prefix = task_prefix
 
+        self.average_pixel_value = self.calculate_average_pixel_value() if self.use_hide_patches else None
+        print(f"Average pixel value: {self.average_pixel_value}")
+
     def load_dataset(self, json_path: str):
         with open(json_path, 'r') as f:
             dataset = json.load(f)
         return dataset
+    
+    def calculate_average_pixel_value(self):
+        # Calculate the average pixel value across a subset of the dataset
+        num_samples = min(10, len(self.dataset))  # use 10 images to estimate the average pixel value
+        total = 0
+        for i in range(num_samples):
+            image_path = os.path.join(self.images_folder, self.dataset[i]['img_id'] + ".png")
+            image = Image.open(image_path).convert("RGB")
+            total += np.mean(np.array(image))
+        return total / num_samples
     
     def __len__(self) -> int:
         return self.dataset_length
@@ -56,8 +88,12 @@ class UnichartDataset(Dataset):
 
         # input_tensor
         img_path = os.path.join(self.images_folder, image_name)
-        img = Image.open(img_path)
-        pixel_values = self.processor(img.convert("RGB"), random_padding=self.split == "train", return_tensors="pt").pixel_values
+        img = Image.open(img_path).convert("RGB")
+
+        if self.split == "train" and self.use_hide_patches:
+            img = hide_patches(img, self.grid_size, self.p_hide, self.average_pixel_value)
+
+        pixel_values = self.processor(img, random_padding=self.split == "train", return_tensors="pt").pixel_values
         input_tensor = pixel_values.squeeze()
 
         # input_ids

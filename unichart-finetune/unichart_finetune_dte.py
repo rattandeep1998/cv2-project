@@ -66,7 +66,7 @@ def main():
   #                             split="valid", prompt_end_token="<s_answer>", task_prefix = "<chartqa>"
   #                             )
   
-  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
+  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>", use_hide_patches=True)
   val_dataset = UnichartDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
 
   print(f"Train dataset length: {len(train_dataset)}")
