@@ -22,7 +22,9 @@ def count_tasks_in_queries(dataframe):
     return task_counts
 
 # Load the three parquet files into a DataFrame
-base_path_unichart = '../data/unichart-pretrain/unichart-pretrain-data/data/'
+# base_path_unichart = '../data/unichart-pretrain/unichart-pretrain-data/data/'
+base_path_unichart = '../../datasets/unichart-pretrain-data/data/'
+
 df = pd.concat([
     pd.read_parquet(base_path_unichart + 'train-00000-of-00003-db40b2e51df9cb23.parquet'),
     pd.read_parquet(base_path_unichart + 'train-00001-of-00003-176f88b6a51ec36d.parquet'),
@@ -43,5 +45,8 @@ formatted_data = [{
 # task_counts = count_tasks_in_queries(df)
 # print(task_counts)
 
-with open('../data/unichart-pretrain/filtered_unichart_pretrain_datatable.json', "w") as file:
+# final_path_unichart_json = '../data/unichart-pretrain/filtered_unichart_pretrain_datatable.json'
+final_path_unichart_json = '../../datasets/unichart-pretrain-data/filtered_unichart_pretrain_datatable.json'
+
+with open(final_path_unichart_json, "w") as file:
     json.dump(formatted_data, file, indent=4)
