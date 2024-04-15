@@ -9,7 +9,7 @@ import json
 # model_name = "ahmed-masry/unichart-base-960"
 # model_name = "ahmed-masry/unichart-chartqa-960"
 
-model_name = "/content/output_data/unichart-on-pretrain-unichart-dte/chartqa-checkpoint-epoch=2-500"
+model_name = "./content/output_data/unichart-on-pretrain-unichart-dte/chartqa-checkpoint-epoch=3-70000"
 
 input_prompt = "<extract_data_table> <s_answer>"
 
