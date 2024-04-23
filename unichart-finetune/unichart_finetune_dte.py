@@ -38,7 +38,7 @@ def main():
   parser.add_argument('--check-val-every-n-epoch', type=int, default=1, help='Ru validation every n epochs')
   parser.add_argument('--log-every-n-steps', type=int, default=50, help='Log every n steps')
   parser.add_argument('--warmup-steps', type=int, default=50, help='Warmup steps')
-  parser.add_argument('--checkpoint-steps', type=int, default=1000, help='Checkpoint steps')
+  parser.add_argument('--checkpoint-steps', type=float, default=1000, help='Checkpoint steps')
   parser.add_argument('--gradient-clip-val', type=float, default=1.0, help='gradient clip value')
 
   parser.add_argument('--accumulate-grad-batches', type=int, default=1, help='accumulate grad batches')
@@ -66,7 +66,7 @@ def main():
   #                             split="valid", prompt_end_token="<s_answer>", task_prefix = "<chartqa>"
   #                             )
   
-  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>", use_hide_patches=True)
+  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>", use_hide_patches=False)
   val_dataset = UnichartDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
 
   print(f"Train dataset length: {len(train_dataset)}")
@@ -95,7 +95,7 @@ def main():
 
   model_output_path = os.path.join(args.output_dir, args.experiment_name)
   
-  checkpoint_callback = ModelCheckpoint(dirpath=model_output_path, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
+  # checkpoint_callback = ModelCheckpoint(monitor='val_accuracy', dirpath=model_output_path, every_n_train_steps = args.checkpoint_steps, save_last = True, save_top_k = -1)
 
   tensorboard_logger = TensorBoardLogger(save_dir=model_output_path, name=args.experiment_name)
 
@@ -104,7 +104,7 @@ def main():
         devices=args.gpus_num,
         max_steps=args.max_steps,
         check_val_every_n_epoch=args.check_val_every_n_epoch,
-        # val_check_interval=100,
+        val_check_interval=args.checkpoint_steps,
         log_every_n_steps=args.log_every_n_steps,
         gradient_clip_val=args.gradient_clip_val,
         num_nodes=args.nodes_num,
@@ -113,7 +113,7 @@ def main():
         #enable_checkpointing=True,
         default_root_dir=args.output_dir,
         logger=tensorboard_logger,
-        callbacks=[checkpoint_callback],
+        # callbacks=[checkpoint_callback],
   )
 
   trainer.fit(model_module)

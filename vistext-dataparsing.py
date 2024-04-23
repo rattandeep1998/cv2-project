@@ -16,8 +16,8 @@ json_data = json.loads(json_file)
 # Read csv and for each image id in dataframe, get corresponding text from json and override target column to new text from json file
 import pandas as pd
 
-input_csv_file = "./finetuned_unichart_on_unichart_pretrain_run_on_vistext.csv"
-output_csv_file = "./finetuned_unichart_on_unichart_pretrain_run_on_vistext_updated.csv"
+input_csv_file = "./finetuned_unichart_on_unichart_pretrain_mask_2_run_on_unichart_pretrain.csv"
+output_csv_file = "./finetuned_unichart_on_unichart_pretrain_mask_2_run_on_unichart_pretrain_updated.csv"
 
 # Read csv file
 df = pd.read_csv(input_csv_file)

@@ -35,7 +35,7 @@ class UnichartDataset(Dataset):
         task_prefix: str = '<chartqa>',
         sort_json_key: bool = True,
         use_hide_patches: bool = False,
-        p_hide: float = 0.3,
+        p_hide: float = 0.5,
         grid_size: Tuple[int, int] = (16, 16),
     ):
         super().__init__()
@@ -68,8 +68,12 @@ class UnichartDataset(Dataset):
         return dataset
     
     def calculate_average_pixel_value(self):
+        return 236.01583
+        # Hardcoded value for unichart-pretrain
+        
         # Calculate the average pixel value across a subset of the dataset
-        num_samples = min(10, len(self.dataset))  # use 10 images to estimate the average pixel value
+        # num_samples = min(1000, len(self.dataset))
+        num_samples = len(self.dataset)
         total = 0
         for i in range(num_samples):
             image_path = os.path.join(self.images_folder, self.dataset[i]['img_id'] + ".png")

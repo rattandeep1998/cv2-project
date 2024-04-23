@@ -9,7 +9,8 @@ import json
 # model_name = "ahmed-masry/unichart-base-960"
 # model_name = "ahmed-masry/unichart-chartqa-960"
 
-model_name = "./content/output_data/unichart-on-pretrain-unichart-dte/chartqa-checkpoint-epoch=3-70000"
+model_name = "./content/output_data/unichart-on-pretrain-unichart-dte-no-mask-2/chartqa-checkpoint-epoch=2-30942"
+# model_name = "./content/output_data/unichart-on-pretrain-unichart-dte-mask-2/chartqa-checkpoint-epoch=2-34380"
 
 input_prompt = "<extract_data_table> <s_answer>"
 
@@ -20,15 +21,19 @@ model.to(device)
 
 print("Device: ", device)
 
-dataset = "vistext"
+# dataset = "vistext"
+dataset = "unichart_pretrain"
+
+# Storing the model outputs
+results_output_path = "finetuned_unichart_on_unichart_pretrain_no_mask_2_run_on_" + dataset + ".csv"
 
 # DATA PRE_PROCESSING
 if dataset == "chartqa":
     image_base_path = "./data/chartqa/test/png/"
 elif dataset == "vistext":
     image_base_path = "./data/vistext/images/"
-# elif dataset == "unichart-pretrain":
-#     image_base_path = "./data/unichart-pretrain/UniCHart-pretrain-images/content/images"
+elif dataset == "unichart_pretrain":
+    image_base_path = "./data/unichart-pretrain/UniChart-pretrain-images/content/images/"
 
 # LOAD IMAGES
 
@@ -42,10 +47,11 @@ tot_count = 0
 for file in os.listdir(image_base_path):
     tot_count += 1
     if re.search(r'\.png$', file):
-        image = Image.open(image_base_path + file).convert("RGB")
+        image_path = image_base_path + file
+        # image = Image.open(image_base_path + file).convert("RGB")
         # File name should be without extension
         file = file.split('.')[0]
-        images[file] = image
+        images[file] = image_path
 
     # TODO - Remove this condition later
     # if tot_count == 100:
@@ -83,6 +89,19 @@ elif dataset == "vistext":
         image_id = row['img_id']
         datatable = row['datatable']
         targets_dictionary[image_id] = datatable
+elif dataset == "unichart_pretrain":
+    # Running only on vistext TEST data
+    datatable_directory_path = "./data/unichart-pretrain/filtered_unichart_pretrain_datatable_test.json"
+
+    with open(datatable_directory_path) as f:
+        data = json.load(f)
+        df = pd.DataFrame(data)
+    
+    # Traverse through dataframe and store the image_id and table in targets_dictionary
+    for index, row in df.iterrows():
+        image_id = row['img_id']
+        datatable = row['table']
+        targets_dictionary[image_id] = datatable
 
 print("Total Data Points Read: ", len(targets_dictionary))
 
@@ -94,11 +113,12 @@ predictions_dictionary = {}
 
 # Run the model on the images
 # Loop over images and generate the output
-for i, image in tqdm(images.items()):
+for i, image_path in tqdm(images.items()):
 
     # Added check for VisText dataset
     if i in targets_dictionary.keys():
-        
+        image = Image.open(image_path).convert("RGB")
+
         decoder_input_ids = processor.tokenizer(input_prompt, add_special_tokens=False, return_tensors="pt").input_ids
         pixel_values = processor(image, return_tensors="pt").pixel_values
 
@@ -122,9 +142,6 @@ for i, image in tqdm(images.items()):
         predictions_dictionary[i] = sequence
 
 print("Total Predictions: ", len(predictions_dictionary))
-
-# Storing the model outputs
-results_output_path = "finetuned_unichart_on_unichart_pretrain_run_on_" + dataset + ".csv"
 
 # Map the predictions to target data and save in dataframe with 3 columns image_id, prediction, target
 dataframe_rows = []

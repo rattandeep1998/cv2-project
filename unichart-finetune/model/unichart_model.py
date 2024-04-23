@@ -3,6 +3,7 @@ import re
 # from nltk import edit_distance
 import numpy as np
 import math, os
+import deplot_metrics as deplot_metrics
 
 from torch.nn.utils.rnn import pad_sequence
 from torch.optim.lr_scheduler import LambdaLR
@@ -11,6 +12,7 @@ from torch.utils.data import DataLoader
 
 import pytorch_lightning as pl
 from pytorch_lightning.utilities import rank_zero_only
+from pytorch_lightning.callbacks import ModelCheckpoint
 
 
 class UnichartModule(pl.LightningModule):
@@ -24,6 +26,7 @@ class UnichartModule(pl.LightningModule):
         self.args=args
 
     def training_step(self, batch, batch_idx):
+        print(f"Training step {batch_idx}")
         pixel_values, decoder_input_ids, labels = batch
         
         outputs = self.model(pixel_values,
@@ -34,6 +37,8 @@ class UnichartModule(pl.LightningModule):
         return loss
 
     def compute_metric(self, gt, pred):
+      print(f"Compute metric: {gt} vs {pred}")
+
       try:
         gt = float(gt)
         pred = float(pred)
@@ -41,7 +46,15 @@ class UnichartModule(pl.LightningModule):
       except:
         return str(gt).lower() == str(pred).lower()
 
+    def compute_deplot_number_accuracy_metric(self, gt, pred):
+        # print(f"DePlot Metric: {gt} \n {pred}")
+        scores = deplot_metrics.table_number_accuracy_per_point([[gt]], [pred])
+        ans = (100.0 * sum(scores))
+        return ans
+
     def validation_step(self, batch, batch_idx, dataset_idx=0):
+        print(f"Validation step {batch_idx}")
+
         pixel_values, decoder_input_ids, prompt_end_idxs, answers = batch
         decoder_prompts = pad_sequence(
             [input_id[: end_idx + 1] for input_id, end_idx in zip(decoder_input_ids, prompt_end_idxs)],
@@ -70,14 +83,20 @@ class UnichartModule(pl.LightningModule):
             pred = pred.replace(self.processor.tokenizer.eos_token, "").replace("<s>", "").strip(' ')
             answer = answer.split("<s_answer>")[1] 
             answer = answer.replace(self.processor.tokenizer.eos_token, "").strip(' ')
-            if self.compute_metric(answer, pred):
-              scores.append(1)
-            else:
-              scores.append(0)
+            # if self.compute_metric(answer, pred):
+            #   print(f"Correct: {answer} vs {pred}")
+            #   scores.append(1)
+            # else:
+            #   print(f"Wrong: {answer} vs {pred}")
+            #   scores.append(0)
+
+            score = self.compute_deplot_number_accuracy_metric(answer, pred)
+            scores.append(score)
 
         return scores
 
     def validation_epoch_end(self, validation_step_outputs):
+        print(f"Validation epoch end")
         # I set this to 1 manually
         # (previously set to len(self.config.dataset_name_or_paths))
         num_of_loaders = 1
@@ -88,6 +107,8 @@ class UnichartModule(pl.LightningModule):
         total_metric = [0] * num_of_loaders
         val_metric = [0] * num_of_loaders
         for i, results in enumerate(validation_step_outputs):
+            print(f"Results: {results}")
+
             for scores in results:
                 cnt[i] += len(scores)
                 total_metric[i] += np.sum(scores)
@@ -138,6 +159,19 @@ class UnichartModule(pl.LightningModule):
 
     @rank_zero_only
     def on_save_checkpoint(self, checkpoint):
+        print(f"Dummy Saving model at epoch {self.current_epoch} and step {self.global_step}")
         save_path = os.path.join(self.config['result_path'], self.config['experiment_name'], 'chartqa-checkpoint-epoch='+str(self.current_epoch)+'-'+str(self.global_step))
         self.model.save_pretrained(save_path)
         self.processor.save_pretrained(save_path)
+
+    def configure_callbacks(self):
+        print("Configuring callbacks")
+        checkpoint_callback = ModelCheckpoint(
+            monitor='val_metric',  # Monitoring the average validation metric
+            dirpath=os.path.join(self.config['result_path'], self.config['experiment_name']),
+            filename='{epoch:02d}-{val_metric:.2f}',
+            save_top_k=1,  # Save only the top 1 model
+            mode='max',  # Mode 'max' because higher val_metric is better
+            auto_insert_metric_name=False  # For cleaner filenames
+        )
+        return [checkpoint_callback]
