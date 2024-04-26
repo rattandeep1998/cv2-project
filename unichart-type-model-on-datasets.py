@@ -6,13 +6,13 @@ import pandas as pd
 import json
 
 # UniChart model
-model_name = "ahmed-masry/unichart-base-960"
+# model_name = "ahmed-masry/unichart-base-960"
 # model_name = "ahmed-masry/unichart-chartqa-960"
 
 # model_name = "./content/output_data/unichart-on-pretrain-unichart-dte-no-mask-2/chartqa-checkpoint-epoch=2-30942"
-# model_name = "./content/output_data/unichart-on-pretrain-unichart-dte-mask-2/chartqa-checkpoint-epoch=2-34380"
+model_name = "./content/output_data/unichart-on-pretrain-unichart-type-dte-full/chartqa-checkpoint-epoch=6-85950"
 
-input_prompt = "<extract_data_table> <s_answer>"
+# input_prompt = "<extract_data_table> <s_answer>"
 
 model = VisionEncoderDecoderModel.from_pretrained(model_name)
 processor = DonutProcessor.from_pretrained(model_name)
@@ -25,7 +25,7 @@ print("Device: ", device)
 dataset = "unichart_pretrain"
 
 # Storing the model outputs
-results_output_path = "unichart_run_on_" + dataset + ".csv"
+results_output_path = "finetuned_unichart_on_unichart_type_pretrain_run_on_" + dataset + ".csv"
 
 # DATA PRE_PROCESSING
 if dataset == "chartqa":
@@ -63,6 +63,7 @@ print("Total Images Read: ", len(images))
 
 # Initialize an empty list to store data
 targets_dictionary = {}
+targets_chart_type = {}
 
 if dataset == "chartqa":
     csv_directory_path = "./data/chartqa/test/tables/"
@@ -77,21 +78,38 @@ if dataset == "chartqa":
             image_id = file.replace('.csv', '')
             targets_dictionary[image_id] = content
 elif dataset == "vistext":
-    # Running only on vistext TEST data
-    datatable_directory_path = "./data/vistext/data_test.json"
+    chart_type_name_mapping = {'bar plot': 'Bar Plot', 
+                               'bar chart': 'Bar Plot', 
+                               'bar graph': 'Bar Plot',
+                               'bar diagram': 'Bar Plot',
+                               'area plot': 'Line Plot',
+                               'area graph': 'Line Plot',
+                               'area chart': 'Line Plot',
+                               'area diagram': 'Line Plot',
+                               'line plot': 'Line Plot',
+                               'line diagram': 'Line Plot',
+                               'line chart': 'Line Plot',
+                               'line graph': 'Line Plot',
+                               'pie plot': 'Pie Plot'}
 
-    with open(datatable_directory_path) as f:
-        data = json.load(f)
-        df = pd.DataFrame(data)
-    
-    # Traverse through dataframe and store the image_id and table in targets_dictionary
-    for index, row in df.iterrows():
-        image_id = row['img_id']
-        datatable = row['datatable']
-        targets_dictionary[image_id] = datatable
-elif dataset == "unichart_pretrain":
     # Running only on vistext TEST data
-    datatable_directory_path = "./data/unichart-pretrain/filtered_unichart_pretrain_datatable_test.json"
+    datatable_directory_path = "./data/vistext/mmfact_vistext_test.json"
+
+    with open(datatable_directory_path, 'r') as f:
+        json_file = f.read()
+        json_data = json.loads(json_file)
+
+        for entry in json_data:
+            image_id = entry['img_id']
+            datatable = entry['table']
+            chart_type = chart_type_name_mapping[entry['chart_type']]
+            targets_dictionary[image_id] = datatable
+            targets_chart_type[image_id] = chart_type
+
+elif dataset == "unichart_pretrain":
+    chart_type_name_mapping = {'v_bar': 'Bar Plot', 'h_bar': 'Bar Plot', 'line': 'Line Plot', 'pie': 'Pie Plot'}
+    # Running only on vistext TEST data
+    datatable_directory_path = "./data/unichart-pretrain/updated_unichart_pretrain_datatable_test.json"
 
     with open(datatable_directory_path) as f:
         data = json.load(f)
@@ -101,7 +119,9 @@ elif dataset == "unichart_pretrain":
     for index, row in df.iterrows():
         image_id = row['img_id']
         datatable = row['table']
+        chart_type = chart_type_name_mapping[row['chart_type']]
         targets_dictionary[image_id] = datatable
+        targets_chart_type[image_id] = chart_type
 
 print("Total Data Points Read: ", len(targets_dictionary))
 
@@ -118,6 +138,10 @@ for i, image_path in tqdm(images.items()):
     # Added check for VisText dataset
     if i in targets_dictionary.keys():
         image = Image.open(image_path).convert("RGB")
+
+        chart_type = targets_chart_type[i]
+
+        input_prompt = "<extract_data_table_chart_type> " + chart_type + " <s_answer>"
 
         decoder_input_ids = processor.tokenizer(input_prompt, add_special_tokens=False, return_tensors="pt").input_ids
         pixel_values = processor(image, return_tensors="pt").pixel_values
@@ -138,7 +162,8 @@ for i, image_path in tqdm(images.items()):
         sequence = processor.batch_decode(outputs.sequences)[0]
         sequence = sequence.replace(processor.tokenizer.eos_token, "").replace(processor.tokenizer.pad_token, "")
         sequence = sequence.split("<s_answer>")[1].strip()
-
+        print(sequence)
+        print("====================================")
         predictions_dictionary[i] = sequence
 
 print("Total Predictions: ", len(predictions_dictionary))

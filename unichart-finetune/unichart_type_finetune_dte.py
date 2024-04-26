@@ -66,8 +66,8 @@ def main():
   #                             split="valid", prompt_end_token="<s_answer>", task_prefix = "<chartqa>"
   #                             )
   
-  train_dataset = UnichartDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>", use_hide_patches=False)
-  val_dataset = UnichartDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table>")
+  train_dataset = UnichartTypeDataset(args.train_json, args.images_folder, args.max_length, processor=processor, split="train", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table_chart_type>", use_hide_patches=False)
+  val_dataset = UnichartTypeDataset(args.valid_json, args.images_folder, args.max_length, processor=processor, split="valid", prompt_end_token="<s_answer>", task_prefix = "<extract_data_table_chart_type>")
 
   print(f"Train dataset length: {len(train_dataset)}")
   print(f"Val dataset length: {len(val_dataset)}")
@@ -87,7 +87,7 @@ def main():
             "experiment_name": args.experiment_name
           }
 
-  model_module = UnichartModule(config, processor, model, args, train_dataset, val_dataset)
+  model_module = UnichartTypeModule(config, processor, model, args, train_dataset, val_dataset)
   
   # wandb_logger = WandbLogger(project="UniChart-ChartQA")
   # lr_callback = LearningRateMonitor(logging_interval="step")

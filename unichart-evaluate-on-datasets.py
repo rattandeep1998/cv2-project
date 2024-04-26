@@ -34,8 +34,8 @@ def preprocess_outputs(targets, predictions, dataset):
 dataset = "vistext"
 # Since while running Unichart model, it is picking target datapoints directly from CSV,
 # we do not need to change the dataset type here or do some different formatting.
-csv_file_path = "finetuned_unichart_on_unichart_pretrain_no_mask_2_run_on_unichart_pretrain.csv"
-processed_csv_file_path = "finetuned_unichart_on_unichart_pretrain_no_mask_2_run_on_unichart_pretrain_processed.csv"
+csv_file_path = "unichart_run_on_unichart_pretrain.csv"
+processed_csv_file_path = "unichart_run_on_unichart_pretrain_processed.csv"
 
 # dataset = "vistext"
 # csv_file_path = "finetuned_unichart_on_chartqa_formatted_run_on_vistext_updated.csv"

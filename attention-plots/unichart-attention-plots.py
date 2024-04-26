@@ -17,9 +17,9 @@ IMAGE_URL = 'https://raw.githubusercontent.com/vis-nlp/ChartQA/main/ChartQA%20Da
 # image_path = '../data/chartqa/train/png/12044.png'
 # image_path = '../data/chartqa/train/png/two_col_104783.png'
 # image_path = '../data/vistext/images/5.png'
-# image_path = '../data/chartqa/train/png/85839291000279.png'
+image_path = '../data/chartqa/train/png/85839291000279.png'
 # 34 and 63 and 288 and 7059
-image_path = '../data/vistext/images/7059.png'
+# image_path = '../data/vistext/images/7059.png'
 
 input_prompt = "<extract_data_table> <s_answer>"
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -33,7 +33,7 @@ def hide_patches(image, grid_size=(16, 16)):
 
     for i in range(0, h, patch_h):
         for j in range(0, w, patch_w):
-            if np.random.rand() < 0.3:
+            if np.random.rand() < 0.2:
                 img_array[i:i+patch_h, j:j+patch_w, :] = average_pixel_value
     return Image.fromarray(img_array)
 
@@ -97,17 +97,24 @@ def run_model(model_name, image_path, input_prompt):
     return image, hidden_image, outputs, outputs_hidden
 
 def main():
-    fig, axs = plt.subplots(len(model_names), 2, figsize=(20, 15), squeeze=False)  # Adjust as needed
+    # fig, axs = plt.subplots(len(model_names), 2, figsize=(20, 15), squeeze=False)  # Adjust as needed
 
-    for i, model_name in enumerate(model_names):
-        image, hidden_image, outputs, outputs_hidden = run_model(model_name, image_path, input_prompt)
+    # for i, model_name in enumerate(model_names):
+    #     image, hidden_image, outputs, outputs_hidden = run_model(model_name, image_path, input_prompt)
 
-        create_heatmap(image, outputs, axs[i, 0], f"Original")
-        create_heatmap(hidden_image, outputs_hidden, axs[i, 1], f"Hidden")
+    #     create_heatmap(image, outputs, axs[i, 0], f"Original")
+    #     create_heatmap(hidden_image, outputs_hidden, axs[i, 1], f"Hidden")
 
-    plt.tight_layout()
-    plt.savefig("combined_plots_one_vistext_7059.png")
-    plt.close()
+    # plt.tight_layout()
+    # plt.savefig("combined_plots_one_vistext_7059.png")
+    # plt.close()
+
+    image = Image.open(image_path).convert("RGB")
+    hidden_image = hide_patches(image)
+    image.save("original_image.png")
+    
+    # Save hidden image
+    hidden_image.save("hidden_image.png")
 
 if __name__ == "__main__":
     main()
