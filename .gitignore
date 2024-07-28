@@ -2,3 +2,4 @@ data/*
 __pycache__
 content/*
 ./dataset-creation/chart-type/best_resnet_model.pth
+.DS_Store
